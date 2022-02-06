@@ -49,11 +49,7 @@ def replay_job():
     return output if output else err
 
 
-def get_current_build_number():
-    data = json.loads(requests.get
-                      ("http://ec2-18-130-84-98.eu-west-2.compute.amazonaws.com:5000/job/LiveDebuggerPipeline/api/json")
-                      .text)
-    return data["builds"][0]["number"]
+
 
 
 
