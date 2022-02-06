@@ -14,7 +14,7 @@ JENKINS_JOB = config.get('JENKINS_CREDENTIALS', 'job')
 JENKINS_URL = config.get('JENKINS_CREDENTIALS', 'url')
 JENKINS_PORT = config.get('JENKINS_CREDENTIALS', 'port')
 
-JENKINS_DIR = default = "/var/lib/Jenkins/workspace/" + JENKINS_JOB
+JENKINS_DIR = default = "/var/lib/jenkins/workspace/" + JENKINS_JOB
 
 
 @app.route('/')
