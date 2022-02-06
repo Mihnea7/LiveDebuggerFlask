@@ -39,7 +39,7 @@ def linter():
 
 @app.route('/replay-job')
 def replay_job():
-    build_nr = request.args.get("build_nr", default=0, type=int)
+    build_nr = request.args.get("build_nr", default=get_current_build_number(), type=int)
     filename = request.args.get("filename", default=JENKINS_DIR + "/Jenkinsfile", type=str)
     command = " java -jar jenkins-cli.jar -s http://%s:%s -auth %s:%s replay-pipeline %s -n %i < %s" \
               % (JENKINS_URL, JENKINS_PORT, JENKINS_USER, JENKINS_PASS, JENKINS_JOB, build_nr, filename)
@@ -47,6 +47,13 @@ def replay_job():
     output = stream.communicate()[0].decode("utf-8")
     err = stream.communicate()[1].decode("utf-8")
     return output if output else err
+
+
+def get_current_build_number():
+    data = json.loads(requests.get
+                      ("http://%s:%s/job/%s/api/json" % (JENKINS_URL, JENKINS_PORT, JENKINS_JOB))
+                      .text)
+    return data["builds"][0]["number"]
 
 
 
