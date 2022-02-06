@@ -27,7 +27,7 @@ def hello():
 @app.route('/declarative-linter')
 def linter():
     filename = request.args.get("filename", default=JENKINS_DIR + "/Jenkinsfile", type=str)
-    command = "java -jar jenkins-cli.jar -s http://%s:%s -auth %s:%s declarative - linter < %s" \
+    command = "java -jar jenkins-cli.jar -s http://%s:%s -auth %s:%s declarative-linter < %s" \
               % (JENKINS_URL, JENKINS_PORT, JENKINS_USER, JENKINS_PASS, filename)
     stream = subprocess.Popen(command, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = stream.communicate()[0].decode("utf-8")
