@@ -2,6 +2,8 @@ from flask import Flask, request
 import os
 import subprocess
 import configparser
+import json
+import requests
 
 app = Flask(__name__)
 
@@ -27,6 +29,7 @@ def hello():
 @app.route('/declarative-linter')
 def linter():
     filename = request.args.get("filename", default=JENKINS_DIR + "/Jenkinsfile", type=str)
+    parse_file_breakpoints(filename)
     command = "java -jar jenkins-cli.jar -s http://%s:%s -auth %s:%s declarative-linter < %s" \
               % (JENKINS_URL, JENKINS_PORT, JENKINS_USER, JENKINS_PASS, filename)
     stream = subprocess.Popen(command, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -39,10 +42,28 @@ def linter():
 def replay_job():
     build_nr = request.args.get("build_nr", default=0, type=int)
     filename = request.args.get("filename", default=JENKINS_DIR + "/Jenkinsfile", type=str)
+    parse_file_breakpoints(filename)
     command = " java -jar jenkins-cli.jar -s http://%s:%s -auth %s:%s replay-pipeline %s -n %i < %s" \
               % (JENKINS_URL, JENKINS_PORT, JENKINS_USER, JENKINS_PASS, JENKINS_JOB, build_nr, filename)
     stream = subprocess.Popen(command, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = stream.communicate()[0].decode("utf-8")
     err = stream.communicate()[1].decode("utf-8")
     return output if output else err
+
+
+def get_current_build_number():
+    data = json.loads(requests.get
+                      ("http://ec2-18-130-84-98.eu-west-2.compute.amazonaws.com:5000/job/LiveDebuggerPipeline/api/json")
+                      .text)
+    return data["builds"][0]["number"]
+
+
+def parse_file_breakpoints(filename):
+    with open(filename, "w") as file:
+        for line in file:
+            if "breakpoint" in line:
+                line = line.replace("breakpoint", "sh \"inject-shell.sh %i\"" % get_current_build_number() + 1)
+                file.write(line)
+
+
 
